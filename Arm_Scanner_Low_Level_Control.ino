@@ -208,7 +208,7 @@ void setup()
   motor10.setParam(FULL_STEP, pulley_diameter, stepRev, INVERT);  
   motor12.setParam(FULL_STEP, pulley_diameter, stepRev, INVERT);  
 
-  goHomeAll(homeSpd);   
+  goHomeFrontAll(homeSpd);   
 }  
 void loop() 
 { 
@@ -234,7 +234,7 @@ void loop()
     }
   }
 }
-void goHomeAll(float spd)
+void goHomeFrontAll(float spd)
 { /* go to home all line */
   digitalWrite(red_pin, HIGH); 
   digitalWrite(green_pin,LOW);
@@ -272,6 +272,7 @@ void goHomeAll(float spd)
   m1 = true, m2 = true, m3 = true, m4 = true, m5 = true, m6 = true;
   while(m1 || m2 || m3 || m4 || m5 || m6) 
   {
+    if(digitalRead(sw_pin)) return;
     if(motor02.isLimited())
       motor02.runEndless(CCW); 
     else m1 = false;   
@@ -316,10 +317,13 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
   motor10.setPosition(pos5);
   motor12.setPosition(pos6);
 
+  unsigned long delayTimer = 0;
+  #define delayTime 200
+  
   while(m1 || m2 || m3 || m4 || m5 || m6) 
   {
-    if(pos1 < riskPos || pos2 < riskPos || pos3 < riskPos || pos4 < riskPos || pos5 < riskPos || pos6 < riskPos){ goHomeAll(homeSpd); break; }
-    if(digitalRead(sw_pin)) break;
+    if(pos1 < riskPos || pos2 < riskPos || pos3 < riskPos || pos4 < riskPos || pos5 < riskPos || pos6 < riskPos){ goHomeFrontAll(homeSpd); break; }
+    if(digitalRead(sw_pin)) return;
   
     
     if(!motor02.isRunFinished())
@@ -327,7 +331,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor02.isLimited())
       {
         forceFinished();
-        while(motor02.isLimited()){  motor02.setSpeed(normalSpd); motor02.runEndless(CW); }
+        delayTimer = millis();
+        while(motor02.isLimited() || millis()-delayTimer <= delayTime)
+        {  
+          runEndlessBackAll(normalSpd); 
+        }
         return; 
       }
       motor02.run(); 
@@ -340,7 +348,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor04.isLimited())
       {
         forceFinished();
-        while(motor04.isLimited()){  motor04.setSpeed(normalSpd); motor04.runEndless(CCW); }
+        delayTimer = millis();
+        while(motor04.isLimited() || millis()-delayTimer <= delayTime)
+        {
+          runEndlessBackAll(normalSpd); 
+        }
         return;
       }
       motor04.run(); 
@@ -353,7 +365,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor06.isLimited())
       {
         forceFinished();
-        while(motor06.isLimited()){ motor06.setSpeed(normalSpd); motor06.runEndless(CW); }
+        delayTimer = millis();
+        while(motor06.isLimited() || millis()-delayTimer <= delayTime)
+        {
+          runEndlessBackAll(normalSpd); 
+        }
         return;
       }
       motor06.run(); 
@@ -366,7 +382,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor08.isLimited())
       {       
         forceFinished();
-        while(motor08.isLimited()){ motor08.setSpeed(normalSpd); motor08.runEndless(CW); }
+        delayTimer = millis();
+        while(motor08.isLimited() || millis()-delayTimer <= delayTime)
+        {
+          runEndlessBackAll(normalSpd); 
+        }
         return;
       }
       motor08.run(); 
@@ -379,7 +399,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor10.isLimited())
       {
         forceFinished();
-        while(motor10.isLimited()){ motor10.setSpeed(normalSpd); motor10.runEndless(CCW); }
+        delayTimer = millis();
+        while(motor10.isLimited() || millis()-delayTimer <= delayTime)
+        {
+          runEndlessBackAll(normalSpd); 
+        }
         return;
       }
       motor10.run(); 
@@ -392,7 +416,11 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
       if(motor12.isLimited())
       {
         forceFinished();
-        while(motor12.isLimited()){ motor12.setSpeed(normalSpd); motor12.runEndless(CCW); }
+        delayTimer = millis();
+        while(motor12.isLimited() || millis()-delayTimer <= delayTime)
+        {
+          runEndlessBackAll(normalSpd); 
+        }
         return;
       }
       motor12.run(); 
@@ -428,7 +456,7 @@ void emergencyCheck()
         l_state = !l_state;
       }
     }
-    goHomeAll(homeSpd);       
+    goHomeFrontAll(homeSpd);       
   }
 }
 void forceFinished()
@@ -445,4 +473,20 @@ void forceFinished()
   motor08.run();
   motor10.run();
   motor12.run();
+}
+void runEndlessBackAll(float spd)
+{
+  motor02.setSpeed(spd); 
+  motor04.setSpeed(spd); 
+  motor06.setSpeed(spd); 
+  motor08.setSpeed(spd); 
+  motor10.setSpeed(spd); 
+  motor12.setSpeed(spd); 
+    
+  motor02.runEndless(CW); 
+  motor04.runEndless(CCW);
+  motor06.runEndless(CW); 
+  motor08.runEndless(CW);
+  motor10.runEndless(CCW);
+  motor12.runEndless(CCW);
 }
