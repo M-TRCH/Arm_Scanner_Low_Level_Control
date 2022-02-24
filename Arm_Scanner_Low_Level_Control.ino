@@ -194,9 +194,9 @@ SmartStepper motor10(enable_, reset_, sleep_, 16, 22, select1, select2, select3,
 SmartStepper motor12(enable_, reset_, sleep_, 15, 21, select1, select2, select3, 29); // tag 4
 
 /* laser sensor */
-#include <Wire.h>
-#include <VL53L0X.h>
-VL53L0X laser;
+//#include <Wire.h>
+//#include <VL53L0X.h>
+//VL53L0X laser;
 
 volatile boolean serialUpdate = false;
 
@@ -241,12 +241,12 @@ void setup()
   goHomeFrontAll(homeSpd);   
 
   /* laser sensor */
-  Wire.begin(); Wire.setSCL(7); Wire.setSDA(8);
-  laser.setTimeout(500);
-  if(!laser.init())
-    Serial.println("Failed to initialize!");
-  laser.setMeasurementTimingBudget(200000);  // increase timimg budget
-  Serial.println(laser.readRangeSingleMillimeters());
+//  Wire.begin(); Wire.setSCL(7); Wire.setSDA(8);
+//  laser.setTimeout(500);
+//  if(!laser.init())
+//    Serial.println("Failed to initialize!");
+//  laser.setMeasurementTimingBudget(200000);  // increase timimg budget
+//  Serial.println(laser.readRangeSingleMillimeters());
   
 }
  
@@ -273,7 +273,9 @@ void loop()
         break;
       case 2:
         Serial1.write('@');
-        Serial1.println(laser.readRangeSingleMillimeters());
+//        Serial1.println(laser.readRangeSingleMillimeters());
+        Serial1.println(motor02.getCurrentPos());
+        Serial.println(motor02.getCurrentPos());
         break;
     }
   }
