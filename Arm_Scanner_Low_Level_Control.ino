@@ -180,8 +180,9 @@ class SmartStepper
 // parameter config
 #define pulley_diameter 12.75
 #define stepRev 200
-#define homeSpd 180
-#define normalSpd 200
+#define homeSpd 160
+#define normalSpd 180
+#define jerkSpd 120
 #define riskPos 20
 int msg[8] = {0};
 
@@ -274,8 +275,8 @@ void loop()
       case 2:
         Serial1.write('@');
 //        Serial1.println(laser.readRangeSingleMillimeters());
-        Serial1.println(motor02.getCurrentPos());
         Serial.println(motor02.getCurrentPos());
+        Serial1.println(motor02.getCurrentPos());
         break;
     }
   }
@@ -324,7 +325,7 @@ void goHomeFrontAll(float spd)
       motor12.runEndless(CCW); 
     else m6 = false;  
   }
-  #define delayTime 100 ///////////////////////////////////////////
+  #define delayTime 200 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
   unsigned long delayTimer = 0;
   m1 = true, m2 = true, m3 = true, m4 = true, m5 = true, m6 = true;
   while(m1 || m2 || m3 || m4 || m5 || m6)  
@@ -336,7 +337,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor02.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd); 
+        runEndlessBackAll(jerkSpd); 
         if(digitalRead(sw_pin)) return;
       }
       break;
@@ -348,7 +349,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor04.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd); 
+        runEndlessBackAll(jerkSpd); 
         if(digitalRead(sw_pin)) return;
       }
       break;
@@ -360,7 +361,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor06.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd); 
+        runEndlessBackAll(jerkSpd); 
         if(digitalRead(sw_pin)) return;
       }
       break;
@@ -372,7 +373,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor08.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd);
+        runEndlessBackAll(jerkSpd);
         if(digitalRead(sw_pin)) return; 
       }
       break;
@@ -384,7 +385,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor10.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd); 
+        runEndlessBackAll(jerkSpd); 
         if(digitalRead(sw_pin)) return;
       }
       break;
@@ -396,7 +397,7 @@ void goHomeFrontAll(float spd)
       delayTimer = millis();
       while(motor12.isLimited() || millis()-delayTimer <= delayTime)
       {
-        runEndlessBackAll(normalSpd); 
+        runEndlessBackAll(jerkSpd); 
         if(digitalRead(sw_pin)) return;
       }
       break;
@@ -432,7 +433,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
   motor10.setPosition(pos5);
   motor12.setPosition(pos6);
 
-  #define delayTime 100 ///////////////////////////////////////////
+  #define delayTime 200 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
   unsigned long delayTimer = 0;
   while(m1 || m2 || m3 || m4 || m5 || m6)
   {
@@ -447,7 +448,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor02.isLimited() || millis()-delayTimer <= delayTime)
         {  
-          runEndlessFrontAll(normalSpd);
+          runEndlessFrontAll(jerkSpd);
           if(digitalRead(sw_pin)){ motor02.run(); return; } 
         }
         motor02.run();
@@ -465,7 +466,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor04.isLimited() || millis()-delayTimer <= delayTime)
         {
-          runEndlessFrontAll(normalSpd); 
+          runEndlessFrontAll(jerkSpd); 
           if(digitalRead(sw_pin)){ motor04.run(); return; } 
         }
         motor04.run();
@@ -483,7 +484,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor06.isLimited() || millis()-delayTimer <= delayTime)
         {
-          runEndlessFrontAll(normalSpd); 
+          runEndlessFrontAll(jerkSpd); 
           if(digitalRead(sw_pin)){ motor06.run(); return; } 
         }
         motor06.run();
@@ -501,7 +502,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor08.isLimited() || millis()-delayTimer <= delayTime)
         {
-          runEndlessFrontAll(normalSpd); 
+          runEndlessFrontAll(jerkSpd); 
           if(digitalRead(sw_pin)){ motor08.run(); return; } 
         }
         motor08.run();
@@ -519,7 +520,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor10.isLimited() || millis()-delayTimer <= delayTime)
         {
-          runEndlessFrontAll(normalSpd); 
+          runEndlessFrontAll(jerkSpd); 
           if(digitalRead(sw_pin)){ motor10.run(); return; } 
         }
         motor10.run();
@@ -537,7 +538,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         delayTimer = millis();
         while(motor12.isLimited() || millis()-delayTimer <= delayTime)
         {
-          runEndlessFrontAll(normalSpd); 
+          runEndlessFrontAll(jerkSpd); 
           if(digitalRead(sw_pin)){ motor12.run(); return; } 
         }
         motor12.run();
@@ -561,21 +562,25 @@ void emergencyCheck()
 {
   if(digitalRead(sw_pin))
   { /* emergency condition */
-    stopAll();
-    Serial1.flush();
-    digitalWrite(green_pin,LOW);
-    unsigned long blinkTimer = millis(); 
-    boolean l_state = true;
-    while(digitalRead(sw_pin))
+    delay(50);
+    if(digitalRead(sw_pin))
     {
-      digitalWrite(red_pin, l_state); 
-      if(millis()-blinkTimer > 500)
+      stopAll();
+      Serial1.flush();
+      digitalWrite(green_pin,LOW);
+      unsigned long blinkTimer = millis(); 
+      boolean l_state = true;
+      while(digitalRead(sw_pin))
       {
-        blinkTimer = millis();
-        l_state = !l_state;
+        digitalWrite(red_pin, l_state); 
+        if(millis()-blinkTimer > 500)
+        {
+          blinkTimer = millis();
+          l_state = !l_state;
+        }
       }
+      goHomeFrontAll(homeSpd);   
     }
-    goHomeFrontAll(homeSpd);       
   }
 }
 void forceFinished()
