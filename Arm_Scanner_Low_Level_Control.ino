@@ -179,10 +179,10 @@ class SmartStepper
 #define sw_pin 26
 // parameter config
 #define pulley_diameter 12.75
-#define stepRev 140
-#define homeSpd 200
-#define normalSpd 200
-#define jerkSpd 180
+#define stepRev 200 // <<<<<<<< Don't Change <<<<<<<<
+#define homeSpd 140
+#define normalSpd 140
+#define jerkSpd 120
 #define riskPos 20
 int msg[8] = {0};
 
@@ -465,6 +465,7 @@ void goHomeFrontAll(float spd)
   digitalWrite(red_pin, LOW);
   digitalWrite(green_pin, HIGH);
   Serial1.flush();
+  stopAll();
 }
 void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float pos5, float pos6)
 { /* action for move to goal position */
@@ -507,6 +508,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor02.run(); return; } 
         }
         motor02.run();
+        stopAll();
         return; 
       } 
       motor02.run();
@@ -525,12 +527,13 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor04.run(); return; }
         }
         motor04.run();
+        stopAll();
         return;
       }
       motor04.run();
     }
     else  m2 = false;
-  
+    
     if(!motor06.isRunFinished())
     {
       if(motor06.isLimited())
@@ -543,6 +546,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor06.run(); return; } 
         }
         motor06.run();
+        stopAll();
         return;
       }
       motor06.run();
@@ -561,6 +565,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor08.run(); return; }
         }
         motor08.run();
+        stopAll();
         return;
       }
       motor08.run(); 
@@ -579,6 +584,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor10.run(); return; }
         }
         motor10.run();
+        stopAll();
         return;
       }
       motor10.run();
@@ -597,12 +603,14 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
           if(getEmer()){ motor12.run(); return; }
         }
         motor12.run();
+        stopAll();
         return;
       }
       motor12.run();
     }
     else  m6 = false;    
   }
+  stopAll();
 }
 void stopAll()
 {
