@@ -168,9 +168,9 @@ class SmartStepper
 };
 
 // output pin config
-#define enable_  36
-#define reset_   38
-#define sleep_   37
+#define enable_ 36
+#define reset_  38
+#define sleep_  37
 #define select1 35
 #define select2 34
 #define select3 33
@@ -179,10 +179,10 @@ class SmartStepper
 #define sw_pin 26
 // parameter config
 #define pulley_diameter 12.75
-#define stepRev 200
-#define homeSpd 160
-#define normalSpd 180
-#define jerkSpd 120
+#define stepRev 140
+#define homeSpd 200
+#define normalSpd 200
+#define jerkSpd 180
 #define riskPos 20
 int msg[8] = {0};
 
@@ -208,6 +208,8 @@ void serialEvent1()
     // example packet -> "# 10 20 30 40 50 60 1 211"
     delay(10);
     int sum = 0;
+    int msgBuf[] = {msg[0], msg[1], msg[2], msg[3], msg[4], msg[5], msg[6]};
+    
     for(int i=0; i<7; i++)
     {
       msg[i] = Serial1.parseInt();
@@ -219,6 +221,14 @@ void serialEvent1()
     if(sum == msg[7])
     {
       serialUpdate = true;
+    }
+    else
+    {
+      for(int i=0; i<7; i++)
+      {
+        msg[i] = msgBuf[i];
+      }
+      serialUpdate = false;
     }
   }
 }
@@ -253,16 +263,48 @@ void setup()
  
 
 /* red pilot lamp control @ camera processing */
+#define boundTime 100
 unsigned long blinkTimer = millis(); 
 boolean l_state = true, blinkState = false;
-     
-void loop() 
-{ 
-  emergencyCheck();
+
+/* test event */
+//#define testEvent
+#define testPeriod 10000 // ms unit
+unsigned long testTimer = millis();
+int posState = 0;
+const int testPos[] = {10, 900};
   
+
+void loop() 
+{   
+  emerEvent();
+
+#if testEvent
+  /* test event */
+  if(millis()-testTimer >= testPeriod)
+  {
+    testTimer = millis();
+    for(int num=0; num<6; num++)
+    {
+      msg[num] = testPos[posState];
+    }
+    posState++;
+    if(posState>1)  posState = 0;
+    serialUpdate = true;
+    Serial.println(posState?"Home!!":"Goal 900mm");
+  }
+#endif
+
+  /* Serial Event */
   if(serialUpdate)
   { 
     serialUpdate = false;
+//    Serial.print(msg[0]); Serial.print("\t");
+//    Serial.print(msg[1]); Serial.print("\t");
+//    Serial.print(msg[2]); Serial.print("\t");
+//    Serial.print(msg[3]); Serial.print("\t");
+//    Serial.print(msg[4]); Serial.print("\t");
+//    Serial.println(msg[5]);
     goPosAll(normalSpd, msg[0], msg[1], msg[2], msg[3], msg[4], msg[5]);
     switch(msg[6])
     {
@@ -304,7 +346,11 @@ void goHomeFrontAll(float spd)
 
   while(m1 || m2 || m3 || m4 || m5 || m6) 
   {
-    if(digitalRead(sw_pin)) return;
+    if(getEmer())
+    {
+//      Serial.println("Emergency! : [HOME]");
+      return;
+    }
   
     if(!motor02.isLimited())
       motor02.runEndless(CW); 
@@ -325,12 +371,16 @@ void goHomeFrontAll(float spd)
       motor12.runEndless(CCW); 
     else m6 = false;  
   }
-  #define delayTime 200 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
+  #define delayTime 300 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
   unsigned long delayTimer = 0;
   m1 = true, m2 = true, m3 = true, m4 = true, m5 = true, m6 = true;
   while(m1 || m2 || m3 || m4 || m5 || m6)  
   {
-    if(digitalRead(sw_pin)) return;
+    if(getEmer())
+    {  
+//      Serial.println("Emergency! : [HOME]");
+      return;
+    }
     
     if(motor02.isLimited())
     {
@@ -338,7 +388,7 @@ void goHomeFrontAll(float spd)
       while(motor02.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd); 
-        if(digitalRead(sw_pin)) return;
+        if(getEmer())  return;
       }
       break;
     }
@@ -350,7 +400,7 @@ void goHomeFrontAll(float spd)
       while(motor04.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd); 
-        if(digitalRead(sw_pin)) return;
+        if(getEmer())  return;
       }
       break;
     }
@@ -362,7 +412,7 @@ void goHomeFrontAll(float spd)
       while(motor06.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd); 
-        if(digitalRead(sw_pin)) return;
+        if(getEmer())  return;
       }
       break;
     } 
@@ -374,7 +424,7 @@ void goHomeFrontAll(float spd)
       while(motor08.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd);
-        if(digitalRead(sw_pin)) return; 
+        if(getEmer())  return;
       }
       break;
     }
@@ -386,7 +436,7 @@ void goHomeFrontAll(float spd)
       while(motor10.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd); 
-        if(digitalRead(sw_pin)) return;
+        if(getEmer())  return;
       }
       break;
     }
@@ -398,7 +448,7 @@ void goHomeFrontAll(float spd)
       while(motor12.isLimited() || millis()-delayTimer <= delayTime)
       {
         runEndlessBackAll(jerkSpd); 
-        if(digitalRead(sw_pin)) return;
+        if(getEmer())  return;
       }
       break;
     }
@@ -414,6 +464,7 @@ void goHomeFrontAll(float spd)
   delay(1000);
   digitalWrite(red_pin, LOW);
   digitalWrite(green_pin, HIGH);
+  Serial1.flush();
 }
 void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float pos5, float pos6)
 { /* action for move to goal position */
@@ -433,12 +484,16 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
   motor10.setPosition(pos5);
   motor12.setPosition(pos6);
 
-  #define delayTime 200 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
+  #define delayTime 300 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< jerky  delay
   unsigned long delayTimer = 0;
   while(m1 || m2 || m3 || m4 || m5 || m6)
   {
     if(pos1 < riskPos || pos2 < riskPos || pos3 < riskPos || pos4 < riskPos || pos5 < riskPos || pos6 < riskPos){ goHomeFrontAll(homeSpd); break; }
-    if(digitalRead(sw_pin)) return;
+    if(getEmer())
+    {
+//      Serial.println("Emergency! : [POS]");
+      return;
+    }
    
     if(!motor02.isRunFinished())
     {
@@ -449,7 +504,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor02.isLimited() || millis()-delayTimer <= delayTime)
         {  
           runEndlessFrontAll(jerkSpd);
-          if(digitalRead(sw_pin)){ motor02.run(); return; } 
+          if(getEmer()){ motor02.run(); return; } 
         }
         motor02.run();
         return; 
@@ -467,7 +522,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor04.isLimited() || millis()-delayTimer <= delayTime)
         {
           runEndlessFrontAll(jerkSpd); 
-          if(digitalRead(sw_pin)){ motor04.run(); return; } 
+          if(getEmer()){ motor04.run(); return; }
         }
         motor04.run();
         return;
@@ -485,7 +540,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor06.isLimited() || millis()-delayTimer <= delayTime)
         {
           runEndlessFrontAll(jerkSpd); 
-          if(digitalRead(sw_pin)){ motor06.run(); return; } 
+          if(getEmer()){ motor06.run(); return; } 
         }
         motor06.run();
         return;
@@ -503,7 +558,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor08.isLimited() || millis()-delayTimer <= delayTime)
         {
           runEndlessFrontAll(jerkSpd); 
-          if(digitalRead(sw_pin)){ motor08.run(); return; } 
+          if(getEmer()){ motor08.run(); return; }
         }
         motor08.run();
         return;
@@ -521,7 +576,7 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor10.isLimited() || millis()-delayTimer <= delayTime)
         {
           runEndlessFrontAll(jerkSpd); 
-          if(digitalRead(sw_pin)){ motor10.run(); return; } 
+          if(getEmer()){ motor10.run(); return; }
         }
         motor10.run();
         return;
@@ -539,14 +594,14 @@ void goPosAll(float spd, float pos1, float pos2, float pos3, float pos4, float p
         while(motor12.isLimited() || millis()-delayTimer <= delayTime)
         {
           runEndlessFrontAll(jerkSpd); 
-          if(digitalRead(sw_pin)){ motor12.run(); return; } 
+          if(getEmer()){ motor12.run(); return; }
         }
         motor12.run();
         return;
       }
       motor12.run();
     }
-    else  m6 = false;
+    else  m6 = false;    
   }
 }
 void stopAll()
@@ -558,29 +613,25 @@ void stopAll()
   motor10.stop();
   motor12.stop();
 }
-void emergencyCheck()
+void emerEvent()
 {
-  if(digitalRead(sw_pin))
-  { /* emergency condition */
-    delay(50);
-    if(digitalRead(sw_pin))
+  if(getEmer())
+  {
+    stopAll();
+    Serial1.flush();
+    digitalWrite(green_pin,LOW);
+    unsigned long blinkTimer = millis(); 
+    boolean l_state = true;
+    while(!digitalRead(sw_pin))
     {
-      stopAll();
-      Serial1.flush();
-      digitalWrite(green_pin,LOW);
-      unsigned long blinkTimer = millis(); 
-      boolean l_state = true;
-      while(digitalRead(sw_pin))
+      digitalWrite(red_pin, l_state); 
+      if(millis()-blinkTimer > 500)
       {
-        digitalWrite(red_pin, l_state); 
-        if(millis()-blinkTimer > 500)
-        {
-          blinkTimer = millis();
-          l_state = !l_state;
-        }
+        blinkTimer = millis();
+        l_state = !l_state;
       }
-      goHomeFrontAll(homeSpd);   
     }
+    goHomeFrontAll(homeSpd);   
   }
 }
 void forceFinished()
@@ -629,4 +680,17 @@ void runEndlessBackAll(float spd)
   motor08.runEndless(CCW);
   motor10.runEndless(CW);
   motor12.runEndless(CW);
+}
+boolean getEmer()
+{
+  boolean state = false;
+  if(!digitalRead(sw_pin))
+  { /* emergency condition */
+    delay(boundTime);
+    if(!digitalRead(sw_pin))
+    {
+      state = true;
+    }
+  }
+  return state;
 }
